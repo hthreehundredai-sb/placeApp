@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>H_PLACE - 여행 경로 최적화</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; border: 1px solid #ccc; borderRadius: 8px; }
+        input, button { width: 100%; padding: 10px; margin: 5px 0 15px 0; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h2>H_PLACE 여행 경로 최적화</h2>
+    
+    <div id="authSection">
+        <h3>로그인 / 회원가입</h3>
+        <input type="text" id="username" placeholder="아이디">
+        <input type="password" id="pin" placeholder="비밀번호 6자리" maxlength="6">
+        <button onclick="register()">회원가입</button>
+        <button onclick="login()">로그인</button>
+        <p id="authMsg"></p>
+    </div>
+
+    <div id="appSection" class="hidden">
+        <h3>여행지 추가 및 최적 경로 계산</h3>
+        <input type="text" id="placeName" placeholder="장소명 (예: 서울역)">
+        <input type="number" id="lat" step="any" placeholder="위도 (Latitude, 예: 37.5547)">
+        <input type="number" id="lng" step="any" placeholder="경도 (Longitude, 예: 126.9707)">
+        <button onclick="addPlace()">장소 추가</button>
+        
+        <h4>장소 목록</h4>
+        <ul id="placeList"></ul>
+        <button onclick="optimizeRoute()">최적 경로 계산</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let places = [];
+        
+        function register() {
+            const username = document.getElementById('username').value;
+            const pin = document.getElementById('pin').value;
+            if(pin.length !== 6) { alert('비밀번호는 6자리 숫자여야 합니다.'); return; }
+            document.getElementById('authMsg').innerText = "회원가입 성공 (로그인 가능)";
+        }
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const pin = document.getElementById('pin').value;
+            if(username && pin.length === 6) {
+                document.getElementById('authSection').classList.add('hidden');
+                document.getElementById('appSection').classList.remove('hidden');
+            } else {
+                alert('아이디와 6자리 비밀번호를 확인해주세요.');
+            }
+        }
+
+        function addPlace() {
+            const name = document.getElementById('placeName').value;
+            const lat = parseFloat(document.getElementById('lat').value);
+            const lng = parseFloat(document.getElementById('lng').value);
+            if(!name || isNaN(lat) || isNaN(lng)) { alert('모든 정보를 입력해주세요.'); return; }
+            places.push({ name, lat, lng });
+            updateList();
+        }
+
+        function updateList() {
+            const ul = document.getElementById('placeList');
+            ul.innerHTML = places.map(p => `<li>${p.name} (${p.lat}, ${p.lng})</li>`).join('');
+        }
+
+        function optimizeRoute() {
+            if(places.length < 2) { alert('최소 2개 이상의 장소를 추가해주세요.'); return; }
+            let visited = new Array(places.length).fill(false);
+            let route = [places[0]];
+            visited[0] = true;
+
+            for(let i = 0; i < places.length - 1; i++) {
+                let curr = route[route.length - 1];
+                let nearestIdx = -1;
+                let minDist = Infinity;
+
+                for(let j = 0; j < places.length; j++) {
+                    if(!visited[j]) {
+                        let d = Math.hypot(curr.lat - places[j].lat, curr.lng - places[j].lng);
+                        if(d < minDist) { minDist = d; nearestIdx = j; }
+                    }
+                }
+                if(nearestIdx !== -1) {
+                    visited[nearestIdx] = true;
+                    route.push(places[nearestIdx]);
+                }
+            }
+            
+            document.getElementById('result').innerHTML = "<b>최적 추천 방문 순서:</b><br>" + route.map((r, i) => `${i+1}. ${r.name}`).join('<br>');
+        }
+    </script>
+</body>
+</html>

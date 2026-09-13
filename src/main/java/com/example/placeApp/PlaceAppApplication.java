@@ -5,9 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class PlaceAppApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(PlaceAppApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(PlaceAppApplication.class, args);
+    }
 }
